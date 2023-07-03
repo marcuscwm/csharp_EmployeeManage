@@ -13,15 +13,29 @@ builder.Services.AddControllersWithViews();
 // Configure connection to MSSQL
 builder.Services.AddDbContext<EMDBContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("db_conn")));
 
+// Enable CORs
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(MyAllowSpecificOrigins,
+                          policy =>
+                          {
+                              policy
+                              .AllowAnyOrigin()
+                              .AllowAnyHeader()
+                              .AllowAnyMethod();
+                          });
+});
+
 var app = builder.Build();
 
-// Check if DB exists
-var scope = app.Services.CreateScope();
-
-var dbContext = scope.ServiceProvider.GetRequiredService<EMDBContext>();
-if (!dbContext.Database.CanConnect())
-{
-    dbContext.Database.EnsureCreated();
+// Check if DB exists, else create it
+using (var scope = app.Services.CreateScope()) {
+    var dbContext = scope.ServiceProvider.GetRequiredService<EMDBContext>();
+    if (!dbContext.Database.CanConnect())
+    {
+        dbContext.Database.EnsureCreated();
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -32,6 +46,9 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// (PIPELINE ORDER SENSITIVE!!) For CORs
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthorization();
 

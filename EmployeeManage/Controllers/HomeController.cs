@@ -1,6 +1,7 @@
 ﻿using EmployeeManage.Data;
 using EmployeeManage.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace EmployeeManage.Controllers;
@@ -8,7 +9,7 @@ namespace EmployeeManage.Controllers;
 
 public class HomeController : Controller
 {
-    private EMDBContext dbContext;
+    private readonly EMDBContext dbContext;
 
     public HomeController(EMDBContext dbContext)
     {
@@ -18,22 +19,56 @@ public class HomeController : Controller
     [HttpGet("/")]
     public IActionResult Index()
     {
+        //var employees = dbContext.Employee.FromSql($"SELECT * FROM dbo.Employee").ToList();
         List<Employee> employees = dbContext.Employee.ToList();
         ViewBag.employees = employees;
         return View();
     }
 
-    [HttpGet("addemployee")]
+    [HttpGet("/addemployee")]
     public IActionResult AddEmployee()
     {
         return View();
     }
 
-    [HttpPost("saveemployee")]
+    [HttpPost]
     public IActionResult SaveEmployee(Employee post)
     {
         dbContext.Add(post);
         dbContext.SaveChanges();
+        return RedirectToAction("Index");
+    }
+
+    [HttpGet("/editemployee/{id}")]
+    public IActionResult EditEmployee(Guid id)
+    {
+        var obj = dbContext.Employee.FirstOrDefault(x => x.Id == id);
+        return View(obj);
+    }
+
+    [HttpPost]
+    public IActionResult UpdateEmployee(Employee post)
+    {
+        var obj = dbContext.Employee.FirstOrDefault(x => x.Id == post.Id);
+        if (obj != null)
+        {
+            obj.FirstName = post.FirstName;
+            obj.LastName = post.LastName;
+            obj.Email = post.Email;
+            dbContext.SaveChanges();
+        }
+        return RedirectToAction("Index");
+    }
+
+    [HttpPost]
+    public IActionResult DeleteEmployee(Employee post)
+    {
+        var obj = dbContext.Employee.FirstOrDefault(x => x.Id == post.Id);
+        if (obj != null)
+        {
+            dbContext.Remove(obj);
+            dbContext.SaveChanges();
+        }
         return RedirectToAction("Index");
     }
 
