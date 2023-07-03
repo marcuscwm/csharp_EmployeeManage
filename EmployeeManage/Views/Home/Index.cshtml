@@ -22,7 +22,12 @@
                 <td>@employee.FirstName</td>
                 <td>@employee.LastName</td>
                 <td>@employee.Email</td>
-                <td><a type="button" class="btn btn-primary" href="/editemployee/@employee.Id">Edit</a></td>
+                <td>
+                    <form method="post">
+                        <a type="button" class="btn btn-primary" href="/editemployee/@employee.Id">Edit</a>
+                        <button type="submit" class="btn btn-danger" asp-action="DeleteEmployee" value="@employee.Id" name="id">Delete</button>
+                    </form>
+                </td>
             </tr>
         }
     </tbody>

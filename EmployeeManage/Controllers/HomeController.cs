@@ -61,9 +61,9 @@ public class HomeController : Controller
     }
 
     [HttpPost]
-    public IActionResult DeleteEmployee(Employee post)
+    public IActionResult DeleteEmployee(Guid id)
     {
-        var obj = dbContext.Employee.FirstOrDefault(x => x.Id == post.Id);
+        var obj = dbContext.Employee.FirstOrDefault(x => x.Id == id);
         if (obj != null)
         {
             dbContext.Remove(obj);
